@@ -1,0 +1,32 @@
+name: release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: 
+      - master
+      - test
+      - beta
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        
+      - name: Install semantic-release plugins
+        run: |
+          npm install @semantic-release/github -D
+          npm install @semantic-release/changelog -D
+          npm install @semantic-release-plus/docker -D
+
+      - name: build
+        run: docker build -t 4s3ti/rstudio-server:latest .
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: npx semantic-release
